@@ -2,17 +2,178 @@
 
 ## 📋 Table of Contents
 1. [Overview](#overview)
-2. [Authentication](#authentication)
-3. [Base URL & Response Format](#base-url--response-format)
-4. [User APIs](#user-apis)
-5. [Admin APIs](#admin-apis)
-6. [Transaction APIs](#transaction-apis)
-7. [Wallet APIs](#wallet-apis)
-8. [Wallet Auto APIs](#wallet-auto-apis)
-9. [Loan APIs](#loan-apis)
-10. [Swap APIs](#swap-apis)
-11. [Notification APIs](#notification-apis)
-12. [Data Types & Enums](#data-types--enums)
+2. [API Summary by Module](#api-summary-by-module)
+3. [Authentication](#authentication)
+4. [Base URL & Response Format](#base-url--response-format)
+5. [User APIs](#user-apis)
+6. [Admin APIs](#admin-apis)
+7. [Transaction APIs](#transaction-apis)
+8. [Wallet APIs](#wallet-apis)
+9. [Wallet Auto APIs](#wallet-auto-apis)
+10. [Loan APIs](#loan-apis)
+11. [Swap APIs](#swap-apis)
+12. [Notification APIs](#notification-apis)
+13. [Data Types & Enums](#data-types--enums)
+
+---
+
+## 📊 API Summary by Module
+
+### 🔐 User APIs (25+ endpoints)
+**Authentication & Registration:**
+- `POST /auth/register` - Đăng ký tài khoản mới
+- `POST /auth/login` - Đăng nhập người dùng
+- `POST /auth/refresh` - Làm mới access token
+- `POST /auth/logout` - Đăng xuất
+- `POST /auth/change-password` - Đổi mật khẩu
+- `POST /auth/forgot-password` - Quên mật khẩu
+- `POST /auth/reset-password` - Đặt lại mật khẩu
+
+**Profile Management:**
+- `POST /auth/me` - Lấy thông tin profile hiện tại
+- `POST /auth/update-profile` - Cập nhật profile
+- `POST /auth/update-avatar` - Cập nhật avatar
+- `POST /auth/verify-email` - Xác thực email
+- `POST /auth/resend-email-verification` - Gửi lại mã xác thực email
+
+**Bank Account Management:**
+- `GET /banks` - Lấy danh sách tài khoản ngân hàng
+- `GET /banks/:id` - Lấy thông tin tài khoản ngân hàng cụ thể
+- `POST /banks/get-code` - Tạo mã xác thực cho thao tác ngân hàng
+- `POST /banks` - Tạo tài khoản ngân hàng mới
+- `PUT /banks/:id` - Cập nhật tài khoản ngân hàng
+- `DELETE /banks/:id` - Xóa tài khoản ngân hàng
+
+**Verification & Security:**
+- `POST /users/verify` - Gửi xác thực KYC
+- `POST /users/set-code` - Tạo mã xác thực
+- `POST /users/google-auth/setup` - Thiết lập Google Authenticator
+- `POST /users/google-auth/verify` - Xác thực Google Authenticator
+- `POST /users/google-auth/disable` - Tắt Google Authenticator
+- `GET /users/google-auth/status` - Kiểm tra trạng thái Google Authenticator
+
+**User Logs & Analytics:**
+- `GET /users/logs` - Lấy log hoạt động người dùng
+- `GET /users/logs/balance-sync` - Lấy log đồng bộ số dư
+
+### 👨‍💼 Admin APIs (40+ endpoints)
+**Admin Authentication:**
+- `POST /admins/auth/login` - Đăng nhập admin
+- `POST /admins/auth/logout` - Đăng xuất admin
+- `POST /admins/auth/refresh` - Làm mới token admin
+- `POST /admins/auth/change-password` - Đổi mật khẩu admin
+- `GET /admins/auth/profile` - Lấy profile và quyền admin
+- `GET /admins/auth/permissions` - Lấy chi tiết quyền admin
+
+**Network Management:**
+- `GET /admins/networks` - Lấy tất cả mạng
+- `GET /admins/networks/active` - Lấy mạng đang hoạt động
+- `GET /admins/networks/:id` - Lấy thông tin mạng theo ID
+- `POST /admins/networks` - Tạo mạng mới
+- `PUT /admins/networks/:id` - Cập nhật mạng
+- `DELETE /admins/networks/:id` - Xóa mạng
+- `PUT /admins/networks/:id/activate` - Kích hoạt mạng
+- `PUT /admins/networks/:id/suspend` - Tạm ngưng mạng
+
+**Coin Management:**
+- `GET /admins/coins` - Lấy tất cả coin
+- `GET /admins/coins/active` - Lấy coin đang hoạt động
+- `GET /admins/coins/:id` - Lấy thông tin coin theo ID
+- `POST /admins/coins` - Tạo coin mới
+- `PUT /admins/coins/:id` - Cập nhật coin
+- `DELETE /admins/coins/:id` - Xóa coin
+- `PUT /admins/coins/:id/activate` - Kích hoạt coin
+- `PUT /admins/coins/:id/suspend` - Tạm ngưng coin
+
+**Coin Network Management:**
+- `GET /admins/coin-networks` - Lấy tất cả coin networks
+- `GET /admins/coin-networks/active` - Lấy coin networks đang hoạt động
+- `GET /admins/coin-networks/network/:networkId` - Lấy coin networks theo network ID
+- `GET /admins/coin-networks/coin/:coinId` - Lấy coin networks theo coin ID
+- `GET /admins/coin-networks/:id` - Lấy thông tin coin network theo ID
+- `POST /admins/coin-networks` - Tạo coin network mới
+- `PUT /admins/coin-networks/:id` - Cập nhật coin network
+- `DELETE /admins/coin-networks/:id` - Xóa coin network
+- `PUT /admins/coin-networks/:id/activate` - Kích hoạt coin network
+- `PUT /admins/coin-networks/:id/suspend` - Tạm ngưng coin network
+
+**User Verification Management:**
+- `PUT /admins/user-verifications/:id/status` - Cập nhật trạng thái xác thực người dùng
+
+### 💱 Transaction APIs (15+ endpoints)
+**Order Management:**
+- `POST /transactions/create-order` - Tạo đơn hàng mua/bán mới
+- `GET /transactions/get-orders` - Lấy danh sách đơn hàng có sẵn
+- `GET /transactions/get-orders/:id` - Lấy chi tiết đơn hàng
+- `PATCH /transactions/cancel-order/:id` - Hủy đơn hàng
+- `POST /transactions/join-order/:id` - Tham gia đơn hàng để tạo giao dịch
+
+**Transaction Processing:**
+- `PATCH /transactions/cancel-transaction/:id` - Hủy giao dịch
+- `PATCH /transactions/send-transaction/:id` - Gửi xác nhận thanh toán
+- `PATCH /transactions/complete-transaction/:id` - Hoàn thành giao dịch
+
+**Dispute Management:**
+- `POST /transactions/create-dispute/:id` - Tạo tranh chấp cho giao dịch
+
+**Auto-completion:**
+- `POST /transactions/trigger-auto-complete` - Kích hoạt quá trình tự động hoàn thành
+- `GET /transactions/auto-complete-status` - Lấy trạng thái tự động hoàn thành
+
+### 💰 Wallet APIs (10+ endpoints)
+**Wallet Management:**
+- `GET /wallets` - Lấy ví người dùng
+- `GET /wallets/:id` - Lấy thông tin ví cụ thể
+- `POST /wallets/sync-balance` - Đồng bộ số dư ví
+- `GET /wallets/test-balance-sync` - Kiểm tra tính nhất quán số dư
+- `GET /wallets/wallet-transaction-balance-summary/:userId/:nationalId` - Lấy tổng kết giao dịch ví
+- `GET /wallets/get-wallet-by-network/:networkId` - Lấy ví theo mạng và đánh dấu hoạt động
+
+**Withdrawal Management:**
+- `POST /wallets/withdraw` - Rút tiền
+- `POST /wallets/calculate-withdraw-fee` - Tính phí rút tiền
+
+### 🤖 Wallet Auto APIs (10+ endpoints)
+**System Status:**
+- `GET /wallet-auto/status` - Lấy trạng thái hệ thống ví tự động
+- `GET /wallet-auto/stats` - Lấy thống kê chi tiết hệ thống
+- `GET /wallet-auto/health` - Kiểm tra sức khỏe hệ thống với thông tin cache
+
+**System Management:**
+- `POST /wallet-auto/scan/:networkId` - Quét thủ công mạng cụ thể
+- `POST /wallet-auto/balance/:address/:networkId` - Cập nhật số dư cho địa chỉ cụ thể
+- `GET /wallet-auto/addresses` - Lấy địa chỉ theo mạng
+- `GET /wallet-auto/networks` - Lấy thông tin mạng hoạt động
+- `GET /wallet-auto/transactions` - Lấy thống kê giao dịch
+
+**Cache Management:**
+- `GET /wallet-auto/cache-info` - Lấy thông tin chi tiết cache
+- `POST /wallet-auto/reload-cache` - Tải lại cache từ database
+
+### 💳 Loan APIs (8+ endpoints)
+**Loan Management:**
+- `POST /loans/create-loan-request` - Tạo yêu cầu vay
+- `GET /loans/requests` - Lấy yêu cầu vay
+- `GET /loans/requests/:id` - Lấy chi tiết yêu cầu vay
+- `PUT /loans/requests/:id/approve` - Phê duyệt yêu cầu vay (Admin)
+- `PUT /loans/requests/:id/reject` - Từ chối yêu cầu vay (Admin)
+
+**Loan Payments:**
+- `POST /loans/make-payment` - Thực hiện thanh toán khoản vay
+- `GET /loans/payments/:loanId` - Lấy thanh toán khoản vay
+
+### 🔄 Swap APIs (5+ endpoints)
+**Token Swapping:**
+- `POST /swaps/create-swap` - Tạo hoán đổi token
+- `GET /swaps/history` - Lấy lịch sử hoán đổi
+- `GET /swaps/:id` - Lấy chi tiết hoán đổi
+
+### 🔔 Notification APIs (5+ endpoints)
+**Notification Management:**
+- `GET /notifications` - Lấy thông báo người dùng
+- `GET /notifications/:id` - Lấy chi tiết thông báo
+- `PUT /notifications/:id/read` - Đánh dấu thông báo đã đọc
+- `PUT /notifications/read-all` - Đánh dấu tất cả thông báo đã đọc
 
 ---
 
