@@ -92,3 +92,9 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@media screen and (max-width : 1860px){
+	html{
+		font-size: 14px;
+	}
+}
