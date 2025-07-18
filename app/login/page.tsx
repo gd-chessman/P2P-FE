@@ -14,11 +14,9 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
-    twoFactorCode: "",
   })
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [isLoading, setIsLoading] = useState(false)
-  const [show2FA, setShow2FA] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,46 +37,14 @@ export default function LoginPage() {
           password: formData.password
         }
 
-        const response = await login(loginData)
-        
-        if (response.success) {
-          // Store tokens if needed
-          if (response.data?.access_token) {
-            localStorage.setItem('access_token', response.data.access_token)
-          }
-          if (response.data?.refresh_token) {
-            localStorage.setItem('refresh_token', response.data.refresh_token)
-          }
-          
-          // Check if 2FA is required
-          if (!show2FA) {
-            setShow2FA(true)
-          } else {
-            // Redirect to dashboard after successful login
-            window.location.href = "/dashboard"
-          }
-        } else {
-          alert(response.message || "Đăng nhập thất bại!")
-        }
+        await login(loginData)
+        toast.success("Đăng nhập thành công! Chào mừng bạn trở lại")
+        setTimeout(() => {
+          window.location.href = "/dashboard"
+        }, 1000)
       } catch (error: any) {
-        console.error("Login error:", error)
-        
-        if (error.response?.data?.message) {
-          alert(error.response.data.message)
-        } else if (error.response?.data?.errors) {
-          // Handle validation errors from API
-          const apiErrors = error.response.data.errors
-          const fieldErrors: { [key: string]: string } = {}
-          
-          apiErrors.forEach((err: string) => {
-            if (err.includes('username')) fieldErrors.username = err
-            else if (err.includes('password')) fieldErrors.password = err
-          })
-          
-          setErrors(fieldErrors)
-        } else {
-          alert("Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại!")
-        }
+        const message = error.response?.data?.message || "Có lỗi xảy ra khi đăng nhập"
+        toast.error(message)
       } finally {
         setIsLoading(false)
       }
@@ -172,27 +138,7 @@ export default function LoginPage() {
                 {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password}</p>}
               </div>
 
-              {show2FA && (
-                <div className="animate-in slide-in-from-top-2 duration-300">
-                  <label htmlFor="twoFactorCode" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Mã xác thực 2FA
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Shield className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="twoFactorCode"
-                      name="twoFactorCode"
-                      type="text"
-                      value={formData.twoFactorCode}
-                      onChange={(e) => setFormData({ ...formData, twoFactorCode: e.target.value })}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white/50 backdrop-blur-sm"
-                      placeholder="Nhập mã 6 số từ ứng dụng xác thực"
-                    />
-                  </div>
-                </div>
-              )}
+
 
               <div className="flex items-center justify-between">
                 <div className="text-sm">
@@ -216,8 +162,6 @@ export default function LoginPage() {
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                       Đang xử lý...
                     </div>
-                  ) : show2FA ? (
-                    "Xác thực"
                   ) : (
                     "Đăng nhập"
                   )}
