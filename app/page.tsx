@@ -1,394 +1,332 @@
-"use client"
+import Link from "next/link"
+import { ArrowRight, Shield, Users, TrendingUp, Star, Zap, Globe, CheckCircle } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { useRouter } from "next/navigation"
-import { Shield, Zap, Users, TrendingUp, Star, ArrowRight, CheckCircle2, DollarSign, Clock } from "lucide-react"
-import { ScrollFadeIn } from "@/components/ui/scroll-fade-in"
-
-export default function HomePage() {
-  const router = useRouter()
-
-  const features = [
-    {
-      icon: Shield,
-      title: "Bảo mật tuyệt đối",
-      description: "Hệ thống bảo mật đa lớp với xác thực 2FA và mã hóa end-to-end, bảo vệ tài sản của bạn.",
-    },
-    {
-      icon: Zap,
-      title: "Giao dịch nhanh chóng",
-      description: "Thực hiện giao dịch P2P trong vài phút với quy trình tối ưu và phí thấp nhất thị trường.",
-    },
-    {
-      icon: Users,
-      title: "Cộng đồng tin cậy",
-      description: "Tham gia cộng đồng hơn 100,000 người dùng đã tin tưởng và sử dụng nền tảng của chúng tôi.",
-    },
-    {
-      icon: TrendingUp,
-      title: "Lãi suất hấp dẫn",
-      description: "Cho vay với lãi suất cạnh tranh lên đến 12%/năm, an toàn và minh bạch.",
-    },
-  ]
-
-  // Định nghĩa màu sắc cho từng tính năng
-  const featureColors = ["green", "red", "purple", "yellow"]
-
-  const testimonials = [
-    {
-      name: "Nguyễn Văn A",
-      role: "Trader chuyên nghiệp",
-      content:
-        "Nền tảng CryptoTrade thật sự tuyệt vời! Giao dịch nhanh chóng, phí thấp và tôi luôn cảm thấy an toàn với tài sản của mình.",
-      rating: 5,
-    },
-    {
-      name: "Trần Thị B",
-      role: "Nhà đầu tư",
-      content:
-        "Tính năng cho vay của CryptoTrade đã giúp tôi kiếm được lợi nhuận ổn định một cách dễ dàng. Rất đáng tin cậy!",
-      rating: 5,
-    },
-    {
-      name: "Lê Văn C",
-      role: "Người mới bắt đầu",
-      content:
-        "Giao diện thân thiện và dễ sử dụng, ngay cả với người mới như tôi. Tôi đã có thể bắt đầu giao dịch chỉ sau vài phút.",
-      rating: 5,
-    },
-  ]
-
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      {/* Hero Section */}
-      <section className="relative py-24 md:py-32 bg-gradient-to-br from-indigo-50 to-blue-100 overflow-hidden">
-        <div className="absolute inset-0 z-0 opacity-30">
-          <img
-            src="https://img.lovepik.com/free-png/20220126/lovepik-science-and-technology-line-background-png-image_401878675_wh1200.png"
-            alt="Background pattern"
-            className="w-full h-full object-cover"
-          />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header */}
+      <header className="backdrop-blur-md bg-white/80 border-b border-white/20 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            P2P Exchange
+          </div>
+          <nav className="hidden md:flex space-x-8">
+            <Link href="/about" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">
+              Giới thiệu
+            </Link>
+            <Link href="/support" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">
+              Hỗ trợ
+            </Link>
+          </nav>
+          <div className="flex items-center space-x-4">
+            <Link href="/login" className="text-gray-600 hover:text-gray-900 font-medium transition-colors">
+              Đăng nhập
+            </Link>
+            <Link
+              href="/register"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-full hover:shadow-lg hover:scale-105 transition-all duration-200 font-medium"
+            >
+              Đăng ký
+            </Link>
+          </div>
         </div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
-            <div className="text-center lg:text-left">
-              <ScrollFadeIn duration={800} direction="none">
-                <Badge className="mb-4 bg-indigo-600 text-white text-sm px-4 py-1 rounded-full shadow-md">
-                  🚀 Nền tảng P2P hàng đầu Việt Nam
-                </Badge>
+      </header>
 
-                <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6 text-gray-900">
-                  Giao dịch Crypto <span className="text-indigo-700">P2P</span>
-                  <br />
-                  An toàn & Nhanh chóng
-                </h1>
-
-                <p className="text-lg md:text-xl text-gray-700 mb-10 max-w-3xl lg:max-w-none mx-auto">
-                  Mua bán Bitcoin, Ethereum và các loại tiền điện tử khác một cách trực tiếp, an toàn với phí giao dịch
-                  thấp nhất thị trường.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-16 lg:mb-0">
-                  <Button
-                    size="lg"
-                    className="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                    onClick={() => router.push("/register")}
-                  >
-                    Bắt đầu giao dịch
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="border-indigo-600 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 bg-transparent shadow-lg hover:shadow-xl transition-all duration-300"
-                    onClick={() => router.push("/login")}
-                  >
-                    Đăng nhập ngay
-                  </Button>
-                </div>
-              </ScrollFadeIn>
-            </div>
-
-            {/* Right Image/Illustration */}
-            <div className="flex justify-center lg:justify-end">
-              <ScrollFadeIn delay={300} duration={1000} direction="right">
-                <img
-                  src="https://remitano.com/home/hero/background-not-logged-in-vn.webp"
-                  alt="Crypto Trading Platform Dashboard"
-                  className="w-full max-w-lg rounded-xl"
-                />
-              </ScrollFadeIn>
+      {/* Hero Section */}
+      <section className="py-20 lg:py-32 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-indigo-600/10"></div>
+        <div className="container mx-auto px-4 text-center relative">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
+              Giao dịch P2P
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent block">
+                an toàn & nhanh chóng
+              </span>
+            </h1>
+            <p className="text-xl lg:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Nền tảng giao dịch tiền điện tử peer-to-peer hàng đầu Việt Nam. Mua bán Bitcoin, Ethereum và nhiều coin
+              khác một cách dễ dàng với bảo mật tối đa.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <Link
+                href="/register"
+                className="group bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center"
+              >
+                Bắt đầu giao dịch
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link
+                href="/about"
+                className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-full text-lg font-semibold hover:border-blue-600 hover:text-blue-600 transition-all duration-300"
+              >
+                Tìm hiểu thêm
+              </Link>
             </div>
           </div>
-
-          {/* Stats Cards below the main content */}
-          <ScrollFadeIn delay={500} duration={800} direction="up">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto mt-16 bg-white p-8 rounded-xl shadow-2xl border border-gray-100">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-indigo-600 mb-2">100K+</div>
-                <div className="text-gray-700 font-medium">Người dùng tin tưởng</div>
-              </div>
-              <div className="text-center border-t md:border-t-0 md:border-l md:border-r border-gray-200 pt-8 md:pt-0">
-                <div className="text-4xl font-bold text-indigo-600 mb-2">$50M+</div>
-                <div className="text-gray-700 font-medium">Khối lượng giao dịch</div>
-              </div>
-              <div className="text-center border-t md:border-t-0 border-gray-200 pt-8 md:pt-0">
-                <div className="text-4xl font-bold text-indigo-600 mb-2">99.9%</div>
-                <div className="text-gray-700 font-medium">Thời gian hoạt động</div>
-              </div>
-            </div>
-          </ScrollFadeIn>
         </div>
+
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-10 w-20 h-20 bg-blue-200 rounded-full opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-32 h-32 bg-indigo-200 rounded-full opacity-20 animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 right-20 w-16 h-16 bg-purple-200 rounded-full opacity-20 animate-pulse delay-500"></div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-white">
+      {/* Stats Section */}
+      <section className="py-20 bg-white/50 backdrop-blur-sm">
         <div className="container mx-auto px-4">
-          <ScrollFadeIn delay={100} duration={800} direction="up">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">Tại sao chọn CryptoTrade?</h2>
-              <p className="text-lg text-gray-700 max-w-2xl mx-auto">
-                Chúng tôi cung cấp nền tảng giao dịch P2P hoàn hảo với các tính năng vượt trội, đảm bảo trải nghiệm tốt
-                nhất cho bạn.
-              </p>
-            </div>
-          </ScrollFadeIn>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <ScrollFadeIn key={index} delay={index * 150 + 200} duration={800} direction="up">
-                <Card className="text-center p-6 bg-white shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-2 border border-gray-100 rounded-xl group">
-                  <CardHeader className="pb-4">
-                    <div
-                      className={`w-16 h-16 bg-${featureColors[index]}-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md group-hover:bg-${featureColors[index]}-600 transition-colors duration-300`}
-                    >
-                      <feature.icon
-                        className={`h-8 w-8 text-${featureColors[index]}-600 group-hover:text-white transition-colors duration-300`}
-                      />
-                    </div>
-                    <CardTitle
-                      className={`text-xl font-semibold text-gray-900 group-hover:text-${featureColors[index]}-600 transition-colors duration-300`}
-                    >
-                      {feature.title}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 text-base">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              </ScrollFadeIn>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+            {[
+              { number: "50,000+", label: "Người dùng", icon: Users },
+              { number: "1M+", label: "Giao dịch", icon: TrendingUp },
+              { number: "$100M+", label: "Khối lượng", icon: Globe },
+              { number: "99.9%", label: "Uptime", icon: Shield },
+            ].map((stat, index) => (
+              <div key={index} className="group hover:scale-105 transition-transform duration-300">
+                <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow">
+                  <stat.icon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                  <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">{stat.number}</div>
+                  <div className="text-gray-600 font-medium">{stat.label}</div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="py-20 bg-gray-100">
+      {/* Features Section */}
+      <section className="py-20 lg:py-32">
         <div className="container mx-auto px-4">
-          <ScrollFadeIn delay={100} duration={800} direction="up">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">Cách thức hoạt động</h2>
-              <p className="text-lg text-gray-700">Chỉ với 3 bước đơn giản để bắt đầu giao dịch trên CryptoTrade</p>
-            </div>
-          </ScrollFadeIn>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">Tính năng nổi bật</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Trải nghiệm giao dịch tốt nhất với các tính năng được thiết kế đặc biệt cho thị trường Việt Nam
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <ScrollFadeIn delay={200} duration={800} direction="left">
-              <div className="text-center relative p-6 bg-white rounded-xl shadow-md border border-gray-100 h-full flex flex-col justify-between">
-                <div>
-                  <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                    <CheckCircle2 className="h-10 w-10" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Shield,
+                title: "Bảo mật đa lớp",
+                description: "Hệ thống bảo mật tiên tiến với xác thực 2FA, mã hóa end-to-end và cold storage",
+                color: "from-green-500 to-emerald-500",
+              },
+              {
+                icon: Zap,
+                title: "Giao dịch tức thì",
+                description: "Khớp lệnh nhanh chóng với hệ thống matching engine hiệu suất cao",
+                color: "from-yellow-500 to-orange-500",
+              },
+              {
+                icon: Users,
+                title: "Cộng đồng tin cậy",
+                description: "Kết nối với hàng nghìn trader đáng tin cậy với hệ thống đánh giá minh bạch",
+                color: "from-purple-500 to-pink-500",
+              },
+            ].map((feature, index) => (
+              <div key={index} className="group hover:scale-105 transition-all duration-300">
+                <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-shadow h-full">
+                  <div
+                    className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}
+                  >
+                    <feature.icon className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Đăng ký tài khoản</h3>
-                  <p className="text-gray-600">Tạo tài khoản an toàn và xác minh danh tính của bạn trong vài phút.</p>
-                </div>
-                <div className="absolute hidden md:block right-0 top-1/2 -mr-16 w-16 h-1 bg-gray-300 transform -translate-y-1/2"></div>
-              </div>
-            </ScrollFadeIn>
-
-            <ScrollFadeIn delay={350} duration={800} direction="up">
-              <div className="text-center relative p-6 bg-white rounded-xl shadow-md border border-gray-100 h-full flex flex-col justify-between">
-                <div>
-                  <div className="w-20 h-20 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                    <DollarSign className="h-10 w-10" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Nạp tiền vào ví</h3>
-                  <p className="text-gray-600">Nạp VND hoặc tiền điện tử vào ví của bạn để sẵn sàng giao dịch.</p>
-                </div>
-                <div className="absolute hidden md:block right-0 top-1/2 -mr-16 w-16 h-1 bg-gray-300 transform -translate-y-1/2"></div>
-              </div>
-            </ScrollFadeIn>
-
-            <ScrollFadeIn delay={500} duration={800} direction="right">
-              <div className="text-center p-6 bg-white rounded-xl shadow-md border border-gray-100 h-full flex flex-col justify-between">
-                <div>
-                  <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                    <Clock className="h-10 w-10" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Bắt đầu giao dịch</h3>
-                  <p className="text-gray-600">Tạo lệnh hoặc tham gia các lệnh có sẵn để giao dịch P2P ngay lập tức.</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                 </div>
               </div>
-            </ScrollFadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Supported Coins */}
+      <section className="py-20 bg-gradient-to-r from-gray-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">Coin được hỗ trợ</h2>
+            <p className="text-xl text-gray-600">Giao dịch với các loại tiền điện tử hàng đầu thế giới</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {[
+              { symbol: "BTC", name: "Bitcoin", color: "from-orange-400 to-orange-600" },
+              { symbol: "ETH", name: "Ethereum", color: "from-blue-400 to-blue-600" },
+              { symbol: "BNB", name: "Binance", color: "from-yellow-400 to-yellow-600" },
+              { symbol: "ADA", name: "Cardano", color: "from-blue-500 to-indigo-600" },
+              { symbol: "SOL", name: "Solana", color: "from-purple-400 to-purple-600" },
+              { symbol: "DOT", name: "Polkadot", color: "from-pink-400 to-pink-600" },
+            ].map((coin, index) => (
+              <div key={index} className="group hover:scale-105 transition-all duration-300">
+                <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow text-center">
+                  <div
+                    className={`w-16 h-16 bg-gradient-to-r ${coin.color} rounded-full mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform`}
+                  >
+                    <span className="font-bold text-white text-lg">{coin.symbol}</span>
+                  </div>
+                  <div className="font-bold text-gray-900">{coin.symbol}</div>
+                  <div className="text-sm text-gray-500">{coin.name}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="py-20 bg-white">
+      <section className="py-20 lg:py-32">
         <div className="container mx-auto px-4">
-          <ScrollFadeIn delay={100} duration={800} direction="up">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">Người dùng nói gì về chúng tôi</h2>
-              <p className="text-lg text-gray-700 max-w-2xl mx-auto">
-                Những đánh giá chân thực từ cộng đồng người dùng CryptoTrade.
-              </p>
-            </div>
-          </ScrollFadeIn>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">Người dùng nói gì</h2>
+            <p className="text-xl text-gray-600">Hàng nghìn khách hàng tin tưởng và sử dụng dịch vụ của chúng tôi</p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <ScrollFadeIn key={index} delay={index * 150 + 200} duration={800} direction="up">
-                <Card className="p-6 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 rounded-xl">
-                  <CardContent className="pt-0">
-                    <div className="flex mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                      ))}
+            {[
+              {
+                name: "Nguyễn Văn A",
+                role: "Trader",
+                text: "Giao diện dễ sử dụng, giao dịch nhanh chóng và an toàn. Tôi đã sử dụng 2 năm rồi và rất hài lòng.",
+                rating: 5,
+                avatar: "bg-gradient-to-r from-blue-500 to-indigo-500",
+              },
+              {
+                name: "Trần Thị B",
+                role: "Investor",
+                text: "Hỗ trợ khách hàng rất tốt, giải quyết vấn đề nhanh chóng và chuyên nghiệp. Highly recommended!",
+                rating: 5,
+                avatar: "bg-gradient-to-r from-purple-500 to-pink-500",
+              },
+              {
+                name: "Lê Văn C",
+                role: "Business Owner",
+                text: "Phí giao dịch thấp, nhiều lựa chọn thanh toán. Rất hài lòng với dịch vụ và sẽ tiếp tục sử dụng.",
+                rating: 5,
+                avatar: "bg-gradient-to-r from-green-500 to-emerald-500",
+              },
+            ].map((testimonial, index) => (
+              <div key={index} className="group hover:scale-105 transition-all duration-300">
+                <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow h-full">
+                  <div className="flex items-center mb-6">
+                    <div
+                      className={`w-12 h-12 ${testimonial.avatar} rounded-full flex items-center justify-center text-white font-bold mr-4`}
+                    >
+                      {testimonial.name.charAt(0)}
                     </div>
-                    <p className="text-gray-700 text-base mb-4 italic">"{testimonial.content}"</p>
                     <div>
-                      <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                      <div className="font-bold text-gray-900">{testimonial.name}</div>
                       <div className="text-sm text-gray-500">{testimonial.role}</div>
                     </div>
-                  </CardContent>
-                </Card>
-              </ScrollFadeIn>
+                  </div>
+
+                  <div className="flex mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+
+                  <p className="text-gray-600 leading-relaxed italic">"{testimonial.text}"</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-indigo-700 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <ScrollFadeIn delay={100} duration={800} direction="up">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Sẵn sàng bắt đầu giao dịch?</h2>
-            <p className="text-lg text-indigo-100 mb-8 max-w-2xl mx-auto">
-              Tham gia cùng hàng nghìn người dùng đang giao dịch crypto an toàn và hiệu quả trên nền tảng của chúng tôi.
-            </p>
-            <Button
-              size="lg"
-              className="bg-white text-indigo-700 hover:bg-gray-100 hover:text-indigo-800 font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={() => router.push("/register")}
-            >
-              Đăng ký miễn phí ngay
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </ScrollFadeIn>
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-indigo-600 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="container mx-auto px-4 text-center relative">
+          <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">Sẵn sàng bắt đầu giao dịch?</h2>
+          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Tham gia cùng hàng nghìn trader thông minh đang sử dụng P2P Exchange
+          </p>
+          <Link
+            href="/register"
+            className="inline-flex items-center bg-white text-blue-600 px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl hover:scale-105 transition-all duration-300"
+          >
+            Tạo tài khoản miễn phí
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-900 text-white py-16">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-indigo-700 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold">P2P</span>
-                </div>
-                <span className="text-xl font-bold">CryptoTrade</span>
+              <div className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                P2P Exchange
               </div>
-              <p className="text-gray-400 text-sm">
-                Nền tảng giao dịch P2P cryptocurrency hàng đầu Việt Nam, mang đến sự an toàn và hiệu quả.
+              <p className="text-gray-400 leading-relaxed">
+                Nền tảng giao dịch P2P hàng đầu Việt Nam, mang đến trải nghiệm giao dịch an toàn và hiệu quả.
               </p>
             </div>
 
             <div>
               <h3 className="font-semibold mb-4 text-lg">Sản phẩm</h3>
-              <ul className="space-y-2 text-gray-400 text-sm">
+              <ul className="space-y-3 text-gray-400">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <Link href="/p2p" className="hover:text-white transition-colors">
                     Giao dịch P2P
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Cho vay/Vay
-                  </a>
+                  <Link href="/swap" className="hover:text-white transition-colors">
+                    Đổi coin
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <Link href="/wallet" className="hover:text-white transition-colors">
                     Ví điện tử
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    API Trading
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-semibold mb-4 text-lg">Hỗ trợ</h3>
-              <ul className="space-y-2 text-gray-400 text-sm">
+              <ul className="space-y-3 text-gray-400">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Trung tâm trợ giúp
-                  </a>
+                  <Link href="/support" className="hover:text-white transition-colors">
+                    Trung tâm hỗ trợ
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <Link href="/about" className="hover:text-white transition-colors">
+                    Về chúng tôi
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="hover:text-white transition-colors">
                     Liên hệ
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Báo cáo lỗi
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Trạng thái hệ thống
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4 text-lg">Pháp lý</h3>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Điều khoản sử dụng
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Chính sách bảo mật
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Chính sách cookie
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Khuyến mại
-                  </a>
-                </li>
-              </ul>
+              <h3 className="font-semibold mb-4 text-lg">Liên hệ</h3>
+              <div className="text-gray-400 space-y-3">
+                <p className="flex items-center">
+                  <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                  support@p2pexchange.vn
+                </p>
+                <p className="flex items-center">
+                  <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+                  Hotline: 1900-xxxx
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-            <p>&copy; 2024 CryptoTrade. Tất cả quyền được bảo lưu.</p>
+          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-400 text-sm">&copy; 2024 P2P Exchange. Tất cả quyền được bảo lưu.</p>
+            <div className="flex items-center space-x-4 mt-4 md:mt-0">
+              <CheckCircle className="h-5 w-5 text-green-400" />
+              <span className="text-sm text-gray-400">Được cấp phép hoạt động</span>
+            </div>
           </div>
         </div>
       </footer>

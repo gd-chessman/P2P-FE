@@ -1,62 +1,73 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Menu, Bell, Search } from "lucide-react"
-import { Input } from "@/components/ui/input"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { Bell, User, ArrowLeft } from "lucide-react"
 
 interface HeaderProps {
-  setSidebarOpen: (open: boolean) => void
-  activeTab: string
+  showBackButton?: boolean
+  backUrl?: string
+  backText?: string
 }
 
-const tabTitles = {
-  dashboard: "Tổng quan",
-  wallet: "Quản lý ví",
-  trading: "Giao dịch",
-  history: "Lịch sử giao dịch",
-  lending: "Vay/Cho vay",
-  chat: "Tin nhắn",
-  profile: "Hồ sơ cá nhân",
-  notifications: "Thông báo",
-}
+export default function Header({ showBackButton = false, backUrl = "/", backText }: HeaderProps) {
+  const pathname = usePathname()
 
-export function Header({ setSidebarOpen, activeTab }: HeaderProps) {
+  const navigationItems = [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/p2p", label: "P2P" },
+    { href: "/wallet", label: "Ví" },
+    { href: "/orders", label: "Đơn hàng" },
+    { href: "/transactions", label: "Lịch sử" },
+    { href: "/profile", label: "Hồ sơ" },
+  ]
+
+  const isActive = (href: string) => {
+    if (href === "/dashboard") {
+      return pathname === "/dashboard"
+    }
+    return pathname.startsWith(href)
+  }
+
   return (
-    <header className="bg-white shadow-sm border-b h-16 flex items-center justify-between px-6">
-      <div className="flex items-center">
-        <Button variant="ghost" size="sm" className="lg:hidden mr-2" onClick={() => setSidebarOpen(true)}>
-          <Menu className="h-5 w-5" />
-        </Button>
-
-        <h2 className="text-xl font-semibold text-gray-800">
-          {tabTitles[activeTab as keyof typeof tabTitles] || "Dashboard"}
-        </h2>
-      </div>
-
-      <div className="flex items-center space-x-4">
-        <div className="hidden md:flex items-center space-x-2">
-          <Search className="h-4 w-4 text-gray-400" />
-          <Input placeholder="Tìm kiếm..." className="w-64" />
-        </div>
-
-        <Button variant="ghost" size="sm" className="relative">
-          <Bell className="h-5 w-5" />
-          <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
-            3
-          </Badge>
-        </Button>
-
-        <div className="flex items-center space-x-3">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium">Nguyễn Văn A</p>
-            <p className="text-xs text-gray-500">Đã xác minh</p>
+    <header className="bg-white shadow-sm border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center py-4">
+          <div className="flex items-center">
+            {showBackButton && (
+              <Link href={backUrl} className="flex items-center text-blue-600 hover:text-blue-700 mr-4">
+                <ArrowLeft className="h-5 w-5 mr-2" />
+                {backText && <span className="hidden sm:inline">{backText}</span>}
+              </Link>
+            )}
+            <Link href="/" className="text-2xl font-bold text-blue-600">
+              P2P Exchange
+            </Link>
           </div>
-          <Avatar>
-            <AvatarImage src="/placeholder.svg?height=32&width=32" />
-            <AvatarFallback>NA</AvatarFallback>
-          </Avatar>
+
+          <nav className="hidden md:flex space-x-8">
+            {navigationItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`${isActive(item.href) ? "text-blue-600 font-medium" : "text-gray-600 hover:text-gray-900"}`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center space-x-4">
+            <button className="p-2 text-gray-400 hover:text-gray-600">
+              <Bell className="h-6 w-6" />
+            </button>
+            <div className="relative">
+              <Link href="/profile" className="flex items-center space-x-2 text-gray-700 hover:text-gray-900">
+                <User className="h-6 w-6" />
+                <span className="hidden md:block">Tài khoản</span>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </header>
