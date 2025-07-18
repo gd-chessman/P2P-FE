@@ -6,6 +6,8 @@ import { useState } from "react"
 import Link from "next/link"
 import { Eye, EyeOff, Lock, User, Shield } from "lucide-react"
 import PublicHeader from "@/components/public-header"
+import { login } from "@/services/AuthService"
+import { toast } from "sonner"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -31,16 +33,55 @@ export default function LoginPage() {
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
-      // Simulate login process
-      setTimeout(() => {
-        if (!show2FA) {
-          setShow2FA(true)
-        } else {
-          // Redirect to dashboard
-          window.location.href = "/dashboard"
+      try {
+        const loginData = {
+          username: formData.username,
+          password: formData.password
         }
+
+        const response = await login(loginData)
+        
+        if (response.success) {
+          // Store tokens if needed
+          if (response.data?.access_token) {
+            localStorage.setItem('access_token', response.data.access_token)
+          }
+          if (response.data?.refresh_token) {
+            localStorage.setItem('refresh_token', response.data.refresh_token)
+          }
+          
+          // Check if 2FA is required
+          if (!show2FA) {
+            setShow2FA(true)
+          } else {
+            // Redirect to dashboard after successful login
+            window.location.href = "/dashboard"
+          }
+        } else {
+          alert(response.message || "Đăng nhập thất bại!")
+        }
+      } catch (error: any) {
+        console.error("Login error:", error)
+        
+        if (error.response?.data?.message) {
+          alert(error.response.data.message)
+        } else if (error.response?.data?.errors) {
+          // Handle validation errors from API
+          const apiErrors = error.response.data.errors
+          const fieldErrors: { [key: string]: string } = {}
+          
+          apiErrors.forEach((err: string) => {
+            if (err.includes('username')) fieldErrors.username = err
+            else if (err.includes('password')) fieldErrors.password = err
+          })
+          
+          setErrors(fieldErrors)
+        } else {
+          alert("Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại!")
+        }
+      } finally {
         setIsLoading(false)
-      }, 1000)
+      }
     } else {
       setIsLoading(false)
     }

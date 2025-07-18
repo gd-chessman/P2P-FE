@@ -6,6 +6,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Eye, EyeOff, CheckCircle, XCircle, User, Mail, Lock, Shield } from "lucide-react"
 import PublicHeader from "@/components/public-header"
+import { register } from "@/services/AuthService"
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -73,11 +74,46 @@ export default function RegisterPage() {
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
-      setTimeout(() => {
-        alert("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.")
-        window.location.href = "/verify-email"
+      try {
+        const registerData = {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword
+        }
+
+        const response = await register(registerData)
+        
+        if (response.success) {
+          alert("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.")
+          window.location.href = "/verify-email"
+        } else {
+          alert(response.message || "Đăng ký thất bại!")
+        }
+      } catch (error: any) {
+        console.error("Register error:", error)
+        
+        if (error.response?.data?.message) {
+          alert(error.response.data.message)
+        } else if (error.response?.data?.errors) {
+          // Handle validation errors from API
+          const apiErrors = error.response.data.errors
+          const fieldErrors: { [key: string]: string } = {}
+          
+          apiErrors.forEach((err: string) => {
+            if (err.includes('username')) fieldErrors.username = err
+            else if (err.includes('email')) fieldErrors.email = err
+            else if (err.includes('password')) fieldErrors.password = err
+            else if (err.includes('confirmPassword')) fieldErrors.confirmPassword = err
+          })
+          
+          setErrors(fieldErrors)
+        } else {
+          alert("Có lỗi xảy ra khi đăng ký. Vui lòng thử lại!")
+        }
+      } finally {
         setIsLoading(false)
-      }, 1000)
+      }
     } else {
       setIsLoading(false)
     }
