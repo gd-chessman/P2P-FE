@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import {
   Search,
   Filter,
@@ -14,6 +14,8 @@ import {
   ArrowUpDown,
   Zap,
   Shield,
+  ChevronDown,
+  Check,
 } from "lucide-react"
 import Header from "@/components/header"
 
@@ -22,6 +24,8 @@ export default function P2PPage() {
   const [selectedFiat, setSelectedFiat] = useState("VND")
   const [activeTab, setActiveTab] = useState("buy")
   const [orderType, setOrderType] = useState("buy")
+  const [showPaymentMethods, setShowPaymentMethods] = useState(false)
+  const paymentMethodsRef = useRef<HTMLDivElement>(null)
   const [orderForm, setOrderForm] = useState({
     amount: "",
     price: "",
@@ -31,6 +35,19 @@ export default function P2PPage() {
     paymentMethods: [] as string[],
     note: "",
   })
+
+  const availablePaymentMethods = [
+    "VietcomBank",
+    "Techcombank", 
+    "BIDV",
+    "VietinBank",
+    "MBBank",
+    "ACB",
+    "TPBank",
+    "VPBank",
+    "Agribank",
+    "Sacombank"
+  ]
 
   const [orders] = useState([
     {
@@ -84,6 +101,43 @@ export default function P2PPage() {
     e.preventDefault()
     alert("Tạo lệnh thành công!")
   }
+
+  const togglePaymentMethod = (method: string) => {
+    setOrderForm(prev => ({
+      ...prev,
+      paymentMethods: prev.paymentMethods.includes(method)
+        ? prev.paymentMethods.filter(m => m !== method)
+        : [...prev.paymentMethods, method]
+    }))
+  }
+
+  const selectAllPaymentMethods = () => {
+    setOrderForm(prev => ({
+      ...prev,
+      paymentMethods: availablePaymentMethods
+    }))
+  }
+
+  const clearAllPaymentMethods = () => {
+    setOrderForm(prev => ({
+      ...prev,
+      paymentMethods: []
+    }))
+  }
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (paymentMethodsRef.current && !paymentMethodsRef.current.contains(event.target as Node)) {
+        setShowPaymentMethods(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -366,20 +420,103 @@ export default function P2PPage() {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-3">Phương thức thanh toán</label>
-                <div className="space-y-2">
-                  {["VietcomBank", "Techcombank", "BIDV", "VietinBank", "MBBank"].map((bank) => (
-                    <label
-                      key={bank}
-                      className="flex items-center p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3"
-                      />
-                      <span className="font-medium text-gray-700">{bank}</span>
-                    </label>
-                  ))}
+                <div className="relative" ref={paymentMethodsRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowPaymentMethods(!showPaymentMethods)}
+                    className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span className="text-gray-700">
+                        {orderForm.paymentMethods.length === 0
+                          ? "Chọn phương thức thanh toán"
+                          : orderForm.paymentMethods.length === 1
+                          ? orderForm.paymentMethods[0]
+                          : `${orderForm.paymentMethods.length} phương thức đã chọn`}
+                      </span>
+                    </div>
+                    <ChevronDown 
+                      className={`h-5 w-5 text-gray-400 transition-transform ${
+                        showPaymentMethods ? "rotate-180" : ""
+                      }`} 
+                    />
+                  </button>
+
+                  {showPaymentMethods && (
+                    <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                      <div className="p-3 border-b border-gray-100 bg-gray-50">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-700">Phương thức thanh toán</span>
+                          <div className="flex space-x-2">
+                            <button
+                              type="button"
+                              onClick={selectAllPaymentMethods}
+                              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                            >
+                              Chọn tất cả
+                            </button>
+                            <button
+                              type="button"
+                              onClick={clearAllPaymentMethods}
+                              className="text-xs text-red-600 hover:text-red-700 font-medium"
+                            >
+                              Xóa tất cả
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-2">
+                        {availablePaymentMethods.map((method) => (
+                          <label
+                            key={method}
+                            className="flex items-center p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors"
+                          >
+                            <div className="relative">
+                              <input
+                                type="checkbox"
+                                checked={orderForm.paymentMethods.includes(method)}
+                                onChange={() => togglePaymentMethod(method)}
+                                className="sr-only"
+                              />
+                              <div className={`w-5 h-5 border-2 rounded flex items-center justify-center ${
+                                orderForm.paymentMethods.includes(method)
+                                  ? "bg-blue-600 border-blue-600"
+                                  : "border-gray-300"
+                              }`}>
+                                {orderForm.paymentMethods.includes(method) && (
+                                  <Check className="h-3 w-3 text-white" />
+                                )}
+                              </div>
+                            </div>
+                            <span className="ml-3 font-medium text-gray-700">{method}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
+                
+                {/* Selected payment methods display */}
+                {orderForm.paymentMethods.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {orderForm.paymentMethods.map((method) => (
+                      <span
+                        key={method}
+                        className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full font-medium"
+                      >
+                        {method}
+                        <button
+                          type="button"
+                          onClick={() => togglePaymentMethod(method)}
+                          className="ml-2 text-blue-500 hover:text-blue-700"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>
