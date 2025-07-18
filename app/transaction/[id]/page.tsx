@@ -97,7 +97,7 @@ export default function TransactionDetailPage({ params }: { params: { id: string
       {/* Header */}
       <Header showBackButton={true} backUrl="/orders" backText="Quay lại đơn hàng" />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Chi tiết giao dịch #{transaction.id}</h1>
           <p className="text-gray-600">Theo dõi tiến độ và chat với đối tác</p>
