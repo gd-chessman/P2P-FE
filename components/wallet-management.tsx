@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -9,47 +10,18 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus, ArrowUpRight, ArrowDownLeft, Copy, QrCode, AlertCircle } from "lucide-react"
+import { getWallets } from "@/services/WalletService"
 
 export function WalletManagement() {
   const [selectedNetwork, setSelectedNetwork] = useState("ethereum")
   const [depositAmount, setDepositAmount] = useState("")
   const [withdrawAmount, setWithdrawAmount] = useState("")
 
-  const wallets = [
-    {
-      id: 1,
-      type: "crypto",
-      symbol: "BTC",
-      name: "Bitcoin",
-      balance: "0.00234567",
-      usdValue: "1,234.56",
-      network: "Bitcoin",
-      address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
-      status: "active",
-    },
-    {
-      id: 2,
-      type: "crypto",
-      symbol: "ETH",
-      name: "Ethereum",
-      balance: "1.23456789",
-      usdValue: "2,345.67",
-      network: "Ethereum",
-      address: "0x742d35Cc6634C0532925a3b8D4C0532925a3b8D4",
-      status: "active",
-    },
-    {
-      id: 3,
-      type: "national",
-      symbol: "VND",
-      name: "Vietnamese Dong",
-      balance: "10,000,000",
-      usdValue: "416.67",
-      network: "Banking",
-      address: "Vietcombank - 1234567890",
-      status: "active",
-    },
-  ]
+  // Fetch wallets data
+  const { data: wallets = [], isLoading: isLoadingWallets } = useQuery({
+    queryKey: ["wallets"],
+    queryFn: getWallets,
+  })
 
   const depositHistory = [
     {

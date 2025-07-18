@@ -3,7 +3,7 @@ import axiosClient from "@/utils/axiosClient";
 // Wallet Management APIs
 export const getWallets = async () => {
     try {
-        const temp = await axiosClient.get(`/wallets`);
+        const temp = await axiosClient.get(`/wallets/my-wallets`);
         return temp.data;
     } catch (e) {
         return [];

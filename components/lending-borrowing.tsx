@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -10,12 +11,20 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { TrendingUp, TrendingDown, Shield, AlertTriangle, Percent } from "lucide-react"
+import { getLoanRequests } from "@/services/LoanService"
 
 export function LendingBorrowing() {
   const [lendAmount, setLendAmount] = useState("")
   const [borrowAmount, setBorrowAmount] = useState("")
   const [selectedCollateral, setSelectedCollateral] = useState("")
 
+  // Fetch loan requests data
+  const { data: myLoans = [], isLoading: isLoadingLoans } = useQuery({
+    queryKey: ["loan-requests"],
+    queryFn: getLoanRequests,
+  })
+
+  // Mock lending pools for now (will be replaced with API later)
   const lendingPools = [
     {
       id: 1,
@@ -46,33 +55,6 @@ export function LendingBorrowing() {
       supplyRate: 7.2,
       borrowRate: 11.8,
       available: "322.45",
-    },
-  ]
-
-  const myLoans = [
-    {
-      id: 1,
-      type: "lend",
-      asset: "USDT",
-      amount: "10,000",
-      interestRate: 8.5,
-      interestEarned: "234.56",
-      startDate: "2024-01-01",
-      status: "active",
-    },
-    {
-      id: 2,
-      type: "borrow",
-      asset: "BTC",
-      amount: "0.5",
-      interestRate: 10.5,
-      interestOwed: "0.0045",
-      collateral: "1.2 ETH",
-      collateralRatio: 180,
-      liquidationPrice: "42,000",
-      startDate: "2024-01-10",
-      dueDate: "2024-02-10",
-      status: "active",
     },
   ]
 

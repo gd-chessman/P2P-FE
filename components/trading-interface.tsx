@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -9,71 +10,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { User } from "lucide-react"
+import { getOrders } from "@/services/TransactionService"
 
 export function TradingInterface() {
   const [orderType, setOrderType] = useState("buy")
   const [amount, setAmount] = useState("")
   const [price, setPrice] = useState("")
 
-  const orderBook = [
-    {
-      id: 1,
-      user: "User123",
-      type: "sell",
-      coin: "BTC",
-      amount: "0.5",
-      price: "45,000",
-      total: "22,500",
-      minOrder: "100",
-      maxOrder: "5,000",
-      banks: ["Vietcombank", "BIDV"],
-      rating: "98%",
-      trades: 156,
-    },
-    {
-      id: 2,
-      user: "Trader456",
-      type: "sell",
-      coin: "BTC",
-      amount: "1.0",
-      price: "44,800",
-      total: "44,800",
-      minOrder: "200",
-      maxOrder: "10,000",
-      banks: ["Techcombank"],
-      rating: "99%",
-      trades: 234,
-    },
-    {
-      id: 3,
-      user: "CryptoKing",
-      type: "buy",
-      coin: "BTC",
-      amount: "0.8",
-      price: "44,500",
-      total: "35,600",
-      minOrder: "150",
-      maxOrder: "8,000",
-      banks: ["Vietcombank", "ACB"],
-      rating: "97%",
-      trades: 89,
-    },
-    {
-      id: 4,
-      user: "BitMaster",
-      type: "buy",
-      coin: "BTC",
-      amount: "2.0",
-      price: "44,200",
-      total: "88,400",
-      minOrder: "500",
-      maxOrder: "20,000",
-      banks: ["BIDV"],
-      rating: "100%",
-      trades: 445,
-    },
-  ]
+  // Fetch orders data
+  const { data: orderBook = [], isLoading: isLoadingOrders } = useQuery({
+    queryKey: ["orders"],
+    queryFn: getOrders,
+  })
 
+  // Mock my orders for now (will be replaced with API later)
   const myOrders = [
     {
       id: 1,

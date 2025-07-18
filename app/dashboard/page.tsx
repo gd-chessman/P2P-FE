@@ -1,5 +1,6 @@
 "use client"
 
+import { useQuery } from "@tanstack/react-query"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -22,75 +23,21 @@ import {
 import { ScrollFadeIn } from "@/components/ui/scroll-fade-in"
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, AreaChart, Area } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { getWallets } from "@/services/WalletService"
+import { getOrders } from "@/services/TransactionService"
 
 export default function DashboardPage() {
-  // Mock data based on API documentation
-  const walletBalances = [
-    {
-      symbol: "BTC",
-      name: "Bitcoin",
-      balance: "0.00234567",
-      usdValue: "156.78",
-      change: "+2.34%",
-      positive: true,
-      logo: "/placeholder.svg?height=32&width=32",
-      historyData: [
-        { name: "1", value: 150 },
-        { name: "2", value: 152 },
-        { name: "3", value: 155 },
-        { name: "4", value: 153 },
-        { name: "5", value: 156 },
-      ],
-    },
-    {
-      symbol: "ETH",
-      name: "Ethereum",
-      balance: "1.23456789",
-      usdValue: "2,456.89",
-      change: "-1.23%",
-      positive: false,
-      logo: "/placeholder.svg?height=32&width=32",
-      historyData: [
-        { name: "1", value: 2500 },
-        { name: "2", value: 2480 },
-        { name: "3", value: 2490 },
-        { name: "4", value: 2460 },
-        { name: "5", value: 2450 },
-      ],
-    },
-    {
-      symbol: "USDT",
-      name: "Tether",
-      balance: "1,500.00",
-      usdValue: "1,500.00",
-      change: "0.00%",
-      positive: true,
-      logo: "/placeholder.svg?height=32&width=32",
-      historyData: [
-        { name: "1", value: 1500 },
-        { name: "2", value: 1500 },
-        { name: "3", value: 1500 },
-        { name: "4", value: 1500 },
-        { name: "5", value: 1500 },
-      ],
-    },
-    {
-      symbol: "VND",
-      name: "Vietnamese Dong",
-      balance: "25,000,000",
-      usdValue: "1,041.67",
-      change: "0.00%",
-      positive: true,
-      logo: "/placeholder.svg?height=32&width=32",
-      historyData: [
-        { name: "1", value: 1040 },
-        { name: "2", value: 1041 },
-        { name: "3", value: 1042 },
-        { name: "4", value: 1041 },
-        { name: "5", value: 1041 },
-      ],
-    },
-  ]
+  // Fetch wallet data
+  const { data: walletBalances = [], isLoading: isLoadingWallets } = useQuery({
+    queryKey: ["wallets"],
+    queryFn: getWallets,
+  })
+
+  // Fetch orders data
+  const { data: activeOrders = [], isLoading: isLoadingOrders } = useQuery({
+    queryKey: ["orders"],
+    queryFn: getOrders,
+  })
 
   const recentTransactions = [
     {
@@ -123,29 +70,10 @@ export default function DashboardPage() {
     },
   ]
 
-  const activeOrders = [
-    {
-      id: "OB001",
-      type: "sell",
-      coin: "BTC",
-      amount: "0.1",
-      price: "67,200",
-      remaining: "0.1",
-      status: "active",
-    },
-    {
-      id: "OB002",
-      type: "buy",
-      coin: "ETH",
-      amount: "2.0",
-      price: "2,450",
-      remaining: "1.2",
-      status: "partial",
-    },
-  ]
+
 
   const totalUsdValue = walletBalances.reduce(
-    (sum, wallet) => sum + Number.parseFloat(wallet.usdValue.replace(",", "")),
+    (sum: number, wallet: any) => sum + Number.parseFloat(wallet.usdValue?.replace(",", "") || "0"),
     0,
   )
 
@@ -445,7 +373,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {walletBalances.map((wallet) => (
+                  {walletBalances.map((wallet: any) => (
                     <div
                       key={wallet.symbol}
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -544,7 +472,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentTransactions.map((tx) => (
+                  {recentTransactions.map((tx: any) => (
                     <div
                       key={tx.id}
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -571,7 +499,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium text-gray-800">${tx.total}</p>
+                        <p className="font-medium text-gray-800">${tx?.total || 0}</p>
                         <Badge variant={tx.status === "completed" ? "default" : "secondary"}>
                           {tx.status === "completed" ? "Hoàn thành" : "Đang xử lý"}
                         </Badge>
@@ -596,7 +524,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {activeOrders.map((order) => (
+                  {activeOrders?.map((order: any) => (
                     <div
                       key={order.id}
                       className="flex items-center justify-between p-4 border border-gray-100 rounded-lg bg-white hover:bg-gray-50 transition-colors"
