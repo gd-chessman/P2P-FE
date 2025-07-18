@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, User, Mail, Phone, Calendar } from "lucide-react"
+import { register } from "@/services/AuthService"
 
 interface RegisterFormProps {
   onSuccess: (user: any) => void
@@ -43,21 +44,38 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
       return
     }
 
-    // Mock API call
-    setTimeout(() => {
-      const newUser = {
-        uid: Date.now(),
+    try {
+      const registerData = {
         uname: formData.uname,
         uemal: formData.uemal,
+        uphone: formData.uphone,
+        upassword: formData.upassword,
         ufulllname: formData.ufulllname,
-        uavater: "/placeholder.svg?height=40&width=40",
-        uverify: false,
-        u_active_email: false,
-        ustatus: "active",
+        uref: formData.uref || "",
+        utelegram: "",
+        ubirthday: formData.ubirthday || "",
+        usex: formData.usex || "man"
       }
-      onSuccess(newUser)
+
+      const response = await register(registerData)
+
+      if (response.statusCode === 200 && response.data) {
+        onSuccess(response.data)
+      } else {
+        setError(response.message || "Đăng ký thất bại")
+      }
+    } catch (error: any) {
+      console.error('Register error:', error)
+      if (error.response?.data?.message) {
+        setError(error.response.data.message)
+      } else if (error.message) {
+        setError(error.message)
+      } else {
+        setError("Đăng ký thất bại. Vui lòng thử lại.")
+      }
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   return (

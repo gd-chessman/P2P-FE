@@ -5,19 +5,20 @@ import { useRouter } from "next/navigation"
 import { RegisterForm } from "@/components/auth/register-form"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { isAuth, login } = useAuth()
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user")
-    if (savedUser) {
+    if (isAuth) {
       router.push("/dashboard")
     }
-  }, [router])
+  }, [isAuth, router])
 
   const handleRegister = (userData: any) => {
-    localStorage.setItem("user", JSON.stringify(userData))
+    login()
     router.push("/dashboard")
   }
 

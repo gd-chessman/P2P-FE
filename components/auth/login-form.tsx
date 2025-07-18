@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Lock, User } from "lucide-react"
+import { login } from "@/services/AuthService"
 
 interface LoginFormProps {
   onSuccess: (user: any) => void
@@ -24,38 +25,34 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  // Mock user data
-  const mockUsers = [
-    {
-      uid: 1,
-      uname: "user123",
-      uemal: "user@example.com",
-      ufulllname: "Nguyễn Văn A",
-      uavater: "/placeholder.svg?height=40&width=40",
-      uverify: true,
-      u_active_email: true,
-      ustatus: "active",
-    },
-  ]
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError("")
 
-    // Mock API call
-    setTimeout(() => {
-      const user = mockUsers.find(
-        (u) => (u.uname === formData.username || u.uemal === formData.username) && formData.password === "123456",
-      )
+    try {
+      const response = await login({
+        username: formData.username,
+        password: formData.password
+      })
 
-      if (user) {
-        onSuccess(user)
+      if (response.statusCode === 200 && response.data) {
+        onSuccess(response.data)
       } else {
-        setError("Tên đăng nhập hoặc mật khẩu không đúng")
+        setError(response.message || "Đăng nhập thất bại")
       }
+    } catch (error: any) {
+      console.error('Login error:', error)
+      if (error.response?.data?.message) {
+        setError(error.response.data.message)
+      } else if (error.message) {
+        setError(error.message)
+      } else {
+        setError("Đăng nhập thất bại. Vui lòng thử lại.")
+      }
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   return (
@@ -127,12 +124,6 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
                 Đăng ký ngay
               </Button>
             </div>
-          </div>
-
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800 font-medium">Demo Account:</p>
-            <p className="text-xs text-blue-600">Username: user123</p>
-            <p className="text-xs text-blue-600">Password: 123456</p>
           </div>
         </form>
       </CardContent>

@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { me } from "@/services/AuthService"
 
 interface AuthState {
   isAuth: boolean
@@ -7,7 +8,22 @@ interface AuthState {
 }
 
 export const useAuth = create<AuthState>((set) => ({
-  isAuth: true, // Default state: not logged in
+  isAuth: false,
   login: () => set({ isAuth: true }),
   logout: () => set({ isAuth: false }),
 }))
+
+// Kiểm tra trạng thái đăng nhập khi khởi tạo
+const checkAuthStatus = async () => {
+  try {
+    const response = await me()
+    if (response.statusCode === 200 && response.data) {
+      useAuth.getState().login()
+    }
+  } catch (error) {
+    console.log('User not authenticated')
+  }
+}
+
+// Gọi API kiểm tra khi khởi tạo
+checkAuthStatus()

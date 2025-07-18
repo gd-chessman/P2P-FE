@@ -27,7 +27,7 @@ axiosClient.interceptors.response.use(
       
       try {
         // Gọi API refresh token với withCredentials
-        await axios.post(`${apiUrl}/api/v1/admins/refresh`, {}, {
+        await axios.post(`${apiUrl}/api/v1/auth/refresh`, {}, {
           withCredentials: true,
         });   
         // Retry request gốc
