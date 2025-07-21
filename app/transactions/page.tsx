@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import {
   User,
   Search,
@@ -14,7 +15,10 @@ import {
   Activity,
   BarChart3,
 } from "lucide-react"
+import { toast } from "sonner"
 import Header from "@/components/header"
+import { getTransactionHistory, type Transaction } from "@/services/WalletService"
+import { getOrders } from "@/services/P2PService"
 
 export default function TransactionsPage() {
   const [selectedTab, setSelectedTab] = useState("all")
@@ -22,85 +26,59 @@ export default function TransactionsPage() {
   const [dateRange, setDateRange] = useState("30")
   const [searchQuery, setSearchQuery] = useState("")
 
-  const [transactions] = useState([
-    {
-      id: "TXN001",
-      type: "p2p_buy",
-      coin: "BTC",
-      amount: 0.1,
-      usdValue: 4300,
-      vndValue: 105000000,
-      counterparty: "trader123",
-      status: "completed",
-      date: "2024-01-15 14:30",
-      txHash: "0x123...abc",
-      fee: "0.001 BTC",
-      verified: true,
-      rating: 4.8,
-    },
-    {
-      id: "TXN002",
-      type: "deposit",
-      coin: "ETH",
-      amount: 1.5,
-      usdValue: 3000,
-      vndValue: 73500000,
-      counterparty: null,
-      status: "completed",
-      date: "2024-01-15 12:15",
-      txHash: "0x456...def",
-      fee: "0.005 ETH",
-      verified: false,
-      rating: 0,
-    },
-    {
-      id: "TXN003",
-      type: "withdraw",
-      coin: "BNB",
-      amount: 5.0,
-      usdValue: 1200,
-      vndValue: 29400000,
-      counterparty: null,
-      status: "pending",
-      date: "2024-01-14 16:45",
-      txHash: "0x789...ghi",
-      fee: "0.0005 BNB",
-      verified: false,
-      rating: 0,
-    },
-    {
-      id: "TXN004",
-      type: "p2p_sell",
-      coin: "BTC",
-      amount: 0.05,
-      usdValue: 2150,
-      vndValue: 52675000,
-      counterparty: "cryptoking",
-      status: "completed",
-      date: "2024-01-14 10:20",
-      txHash: "0xabc...123",
-      fee: "0.0005 BTC",
-      verified: true,
-      rating: 4.9,
-    },
-    {
-      id: "TXN005",
-      type: "swap",
-      coin: "ETH",
-      amount: 0.8,
-      usdValue: 1600,
-      vndValue: 39200000,
-      counterparty: null,
-      status: "failed",
-      date: "2024-01-13 09:15",
-      txHash: "0xdef...456",
-      fee: "0.003 ETH",
-      verified: false,
-      rating: 0,
-    },
-  ])
+  // Queries
+  const { data: walletTransactionsData, isLoading: walletTransactionsLoading } = useQuery({
+    queryKey: ['wallet-transactions'],
+    queryFn: () => getTransactionHistory(),
+  })
 
-  const filteredTransactions = transactions.filter((tx) => {
+  const { data: p2pOrdersData, isLoading: p2pOrdersLoading } = useQuery({
+    queryKey: ['p2p-orders'],
+    queryFn: () => getOrders(),
+  })
+
+  const walletTransactions = walletTransactionsData?.data?.transactions || []
+  const p2pOrders = p2pOrdersData?.data?.orders || []
+
+  // Combine and transform transactions
+  const allTransactions = [
+    // Wallet transactions (deposits/withdrawals)
+    ...walletTransactions.map((tx: Transaction) => ({
+      id: `WH-${tx.wh_id}`,
+      type: tx.wh_type.toLowerCase(),
+      coin: tx.network.network_symbol,
+      amount: tx.wh_amount,
+      usdValue: tx.wh_amount * 43000, // Mock USD value
+      vndValue: tx.wh_amount * 43000 * 24500, // Mock VND value
+      counterparty: null,
+      status: tx.wh_status.toLowerCase(),
+      date: tx.wh_created_at,
+      txHash: tx.wh_tx_hash || "N/A",
+      fee: "0.001", // Mock fee
+      verified: false,
+      rating: 0,
+      originalData: tx
+    })),
+    // P2P orders (buy/sell)
+    ...p2pOrders.map((order: any) => ({
+      id: `P2P-${order.ob_id}`,
+      type: order.ob_option.toLowerCase(),
+      coin: order.coin?.coin_symbol || "BTC",
+      amount: order.ob_amount,
+      usdValue: order.ob_amount * 43000, // Mock USD value
+      vndValue: order.ob_amount * 43000 * 24500, // Mock VND value
+      counterparty: order.user?.uname || "Unknown",
+      status: order.ob_status.toLowerCase(),
+      date: order.ob_created_at,
+      txHash: `P2P-${order.ob_id}`,
+      fee: "0.001", // Mock fee
+      verified: true,
+      rating: 4.8, // Mock rating
+      originalData: order
+    }))
+  ]
+
+  const filteredTransactions = allTransactions.filter((tx: any) => {
     const matchesTab = selectedTab === "all" || tx.type.includes(selectedTab)
     const matchesType = filterType === "all" || tx.type === filterType
     const matchesSearch =
@@ -179,7 +157,7 @@ export default function TransactionsPage() {
   }
 
   const exportTransactions = () => {
-    alert("Xuất dữ liệu giao dịch thành công!")
+    toast.success("Xuất dữ liệu giao dịch thành công!")
   }
 
   const tabs = [
@@ -299,7 +277,19 @@ export default function TransactionsPage() {
 
         {/* Transactions List */}
         <div className="space-y-4">
-          {filteredTransactions.map((tx) => {
+          {(walletTransactionsLoading || p2pOrdersLoading) ? (
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-12 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Đang tải lịch sử giao dịch...</p>
+            </div>
+          ) : filteredTransactions.length === 0 ? (
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-12 text-center">
+              <RefreshCw className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Không có giao dịch nào</h3>
+              <p className="text-gray-500">Không tìm thấy giao dịch nào phù hợp với bộ lọc hiện tại.</p>
+            </div>
+          ) : (
+            filteredTransactions.map((tx: any) => {
             const txConfig = getTransactionConfig(tx.type)
             const statusConfig = getStatusConfig(tx.status)
 
@@ -379,7 +369,10 @@ export default function TransactionsPage() {
                         <Download className="h-5 w-5" />
                       </button>
                       <button
-                        onClick={() => navigator.clipboard.writeText(tx.txHash)}
+                        onClick={() => {
+                          navigator.clipboard.writeText(tx.txHash)
+                          toast.success("Đã sao chép hash!")
+                        }}
                         className="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors font-medium"
                       >
                         Sao chép hash
@@ -389,16 +382,11 @@ export default function TransactionsPage() {
                 </div>
               </div>
             )
-          })}
+          })
+          )}
         </div>
 
-        {filteredTransactions.length === 0 && (
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-12 text-center">
-            <RefreshCw className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Không có giao dịch nào</h3>
-            <p className="text-gray-500">Không tìm thấy giao dịch nào phù hợp với bộ lọc hiện tại.</p>
-          </div>
-        )}
+
 
         {/* Pagination */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 px-6 py-4 flex items-center justify-between mt-8">

@@ -18,10 +18,15 @@ Module Auth quản lý xác thực người dùng, đăng ký, đăng nhập, v�
 **Request Body:**
 ```json
 {
-  "username": "string",
-  "email": "string",
-  "password": "string",
-  "confirmPassword": "string"
+  "uname": "string",
+  "uemal": "string", 
+  "uphone": "string",
+  "upassword": "string",
+  "ufulllname": "string",
+  "uref": "string (optional)",
+  "utelegram": "string (optional)",
+  "ubirthday": "Date (optional)",
+  "usex": "MALE|FEMALE (optional)"
 }
 ```
 
@@ -120,8 +125,7 @@ Authorization: Bearer <jwt_token>
 ```json
 {
   "oldPassword": "string",
-  "newPassword": "string",
-  "confirmPassword": "string"
+  "newPassword": "string"
 }
 ```
 
@@ -142,8 +146,7 @@ Authorization: Bearer <jwt_token>
 ```json
 {
   "resetToken": "string",
-  "newPassword": "string",
-  "confirmPassword": "string"
+  "newPassword": "string"
 }
 ```
 
@@ -153,7 +156,8 @@ Authorization: Bearer <jwt_token>
 **Request Body:**
 ```json
 {
-  "token": "string"
+  "email": "string",
+  "code": "string"
 }
 ```
 
@@ -168,7 +172,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 ### 10. Lấy thông tin user hiện tại
-**GET** `/api/auth/me`
+**POST** `/api/auth/me`
 
 **Headers:**
 ```
@@ -182,14 +186,20 @@ Authorization: Bearer <jwt_token>
   "data": {
     "uid": 1,
     "uname": "username",
-    "uemal": "email@example.com"
+    "uemal": "email@example.com",
+    "ufulllname": "string",
+    "uphone": "string",
+    "uref": "string",
+    "utelegram": "string",
+    "ubirthday": "Date",
+    "usex": "MALE|FEMALE"
   },
-  "message": "Current user retrieved successfully"
+  "message": "User information retrieved successfully"
 }
 ```
 
 ### 11. Cập nhật profile
-**PUT** `/api/auth/update-profile`
+**POST** `/api/auth/update-profile`
 
 **Headers:**
 ```
@@ -199,21 +209,21 @@ Authorization: Bearer <jwt_token>
 **Request Body:**
 ```json
 {
-  "firstName": "string",
-  "lastName": "string",
-  "phone": "string"
+  "ufulllname": "string (optional)",
+  "ubirthday": "Date (optional)",
+  "usex": "MALE|FEMALE (optional)"
 }
 ```
 
 ### 12. Cập nhật avatar
-**PUT** `/api/auth/update-avatar`
+**POST** `/api/auth/update-avatar`
 
 **Headers:**
 ```
 Authorization: Bearer <jwt_token>
 ```
 
-**Request:** Multipart form data với file avatar
+**Request:** Multipart form data với field `file` chứa avatar
 
 ### 13. Kiểm tra token hợp lệ
 **POST** `/api/auth/verify-token`
@@ -288,10 +298,15 @@ interface LoginResponse {
 ### RegisterDto
 ```typescript
 interface RegisterDto {
-  username: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
+  uname: string;
+  uemal: string;
+  uphone: string;
+  upassword: string;
+  ufulllname: string;
+  uref?: string;
+  utelegram?: string;
+  ubirthday?: Date;
+  usex?: UserSex;
 }
 ```
 
@@ -308,7 +323,6 @@ interface LoginDto {
 interface ChangePasswordDto {
   oldPassword: string;
   newPassword: string;
-  confirmPassword: string;
 }
 ```
 
@@ -324,14 +338,14 @@ interface ForgotPasswordDto {
 interface ResetPasswordDto {
   resetToken: string;
   newPassword: string;
-  confirmPassword: string;
 }
 ```
 
 ### VerifyEmailDto
 ```typescript
 interface VerifyEmailDto {
-  token: string;
+  email: string;
+  code: string;
 }
 ```
 
@@ -345,8 +359,8 @@ interface ResendEmailVerificationDto {
 ### UpdateProfileDto
 ```typescript
 interface UpdateProfileDto {
-  firstName: string;
-  lastName: string;
-  phone: string;
+  ufulllname?: string;
+  ubirthday?: Date;
+  usex?: UserSex;
 }
 ``` 

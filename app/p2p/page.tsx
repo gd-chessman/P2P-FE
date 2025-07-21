@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   Search,
   Filter,
@@ -17,7 +18,15 @@ import {
   ChevronDown,
   Check,
 } from "lucide-react"
+import { toast } from "sonner"
 import Header from "@/components/header"
+import { 
+  getOrders, 
+  createOrder, 
+  joinOrder,
+  type CreateOrderRequest,
+  type Order 
+} from "@/services/P2PService"
 
 export default function P2PPage() {
   const [selectedCoin, setSelectedCoin] = useState("BTC")
@@ -49,57 +58,89 @@ export default function P2PPage() {
     "Sacombank"
   ]
 
-  const [orders] = useState([
-    {
-      id: 1,
-      type: "sell",
-      user: "trader123",
-      rating: 4.8,
-      completionRate: 98.5,
-      price: 1050000,
-      available: 0.5,
-      total: 525000,
-      paymentMethods: ["VietcomBank", "Techcombank"],
-      isOnline: true,
-      verified: true,
-      trades: 156,
-    },
-    {
-      id: 2,
-      type: "sell",
-      user: "cryptoking",
-      rating: 4.9,
-      completionRate: 99.2,
-      price: 1048000,
-      available: 1.2,
-      total: 1257600,
-      paymentMethods: ["BIDV", "VietinBank"],
-      isOnline: true,
-      verified: true,
-      trades: 234,
-    },
-    {
-      id: 3,
-      type: "buy",
-      user: "hodler2024",
-      rating: 4.7,
-      completionRate: 97.8,
-      price: 1045000,
-      available: 0.8,
-      total: 836000,
-      paymentMethods: ["MBBank", "ACB"],
-      isOnline: false,
-      verified: false,
-      trades: 89,
-    },
-  ])
+  const queryClient = useQueryClient()
+
+  // Queries
+  const { data: ordersData, isLoading: ordersLoading } = useQuery({
+    queryKey: ['p2p-orders', activeTab],
+    queryFn: () => getOrders(activeTab as 'buy' | 'sell'),
+  })
+
+  const orders = ordersData?.data?.orders || []
 
   const currentPrice = 1047500
   const priceChange = 2.3
 
+  // Mutations
+  const createOrderMutation = useMutation({
+    mutationFn: createOrder,
+    onSuccess: () => {
+      toast.success("Tạo lệnh thành công!")
+      queryClient.invalidateQueries({ queryKey: ['p2p-orders'] })
+      setOrderForm({
+        amount: "",
+        price: "",
+        total: "",
+        minLimit: "",
+        maxLimit: "",
+        paymentMethods: [],
+        note: "",
+      })
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || "Có lỗi xảy ra khi tạo lệnh"
+      toast.error(message)
+    }
+  })
+
+  const joinOrderMutation = useMutation({
+    mutationFn: ({ orderId, amount }: { orderId: number; amount: number }) => 
+      joinOrder(orderId, { nationalAmount: amount }),
+    onSuccess: () => {
+      toast.success("Tham gia lệnh thành công!")
+      queryClient.invalidateQueries({ queryKey: ['p2p-orders'] })
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || "Có lỗi xảy ra khi tham gia lệnh"
+      toast.error(message)
+    }
+  })
+
   const handleCreateOrder = (e: React.FormEvent) => {
     e.preventDefault()
-    alert("Tạo lệnh thành công!")
+    
+    if (!orderForm.amount || !orderForm.price || !orderForm.minLimit || !orderForm.maxLimit) {
+      toast.error("Vui lòng điền đầy đủ thông tin")
+      return
+    }
+
+    if (orderForm.paymentMethods.length === 0) {
+      toast.error("Vui lòng chọn ít nhất một phương thức thanh toán")
+      return
+    }
+
+    const orderData: CreateOrderRequest = {
+      ob_coin: selectedCoin === "BTC" ? 1 : selectedCoin === "ETH" ? 2 : 3, // Map coin symbols to IDs
+      ob_national: selectedFiat === "VND" ? 1 : 2, // Map fiat symbols to IDs
+      ob_amount: parseFloat(orderForm.amount),
+      ob_price: parseFloat(orderForm.price),
+      ob_national_min: parseFloat(orderForm.minLimit),
+      ob_national_max: parseFloat(orderForm.maxLimit),
+      ob_option: orderType.toUpperCase() as 'BUY' | 'SELL',
+      ob_list_banks: orderForm.paymentMethods.map((_, index) => index + 1) // Map payment methods to bank IDs
+    }
+
+    createOrderMutation.mutate(orderData)
+  }
+
+  const handleJoinOrder = (order: Order) => {
+    const amount = prompt(`Nhập số tiền ${selectedFiat} muốn giao dịch:`)
+    if (amount && !isNaN(parseFloat(amount))) {
+      joinOrderMutation.mutate({
+        orderId: order.ob_id,
+        amount: parseFloat(amount)
+      })
+    }
   }
 
   const togglePaymentMethod = (method: string) => {
@@ -250,59 +291,46 @@ export default function P2PPage() {
 
               {/* Order List */}
               <div className="divide-y divide-gray-100">
-                {orders
-                  .filter((order) => order.type === activeTab)
-                  .map((order) => (
-                    <div key={order.id} className="p-6 hover:bg-gray-50/50 transition-colors group">
+                {ordersLoading ? (
+                  <div className="p-6 text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Đang tải danh sách lệnh...</p>
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="p-6 text-center">
+                    <p className="text-gray-600">Không có lệnh nào</p>
+                  </div>
+                ) : (
+                  orders.map((order: Order) => (
+                    <div key={order.ob_id} className="p-6 hover:bg-gray-50/50 transition-colors group">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-4">
                           <div className="relative">
                             <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
                               <User className="h-6 w-6 text-white" />
                             </div>
-                            {order.verified && (
-                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                                <Shield className="h-3 w-3 text-white" />
-                              </div>
-                            )}
                           </div>
                           <div>
                             <div className="flex items-center space-x-2">
-                              <span className="font-bold text-gray-900">{order.user}</span>
-                              {order.verified && (
-                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
-                                  Verified
-                                </span>
-                              )}
+                              <span className="font-bold text-gray-900">{order.user.uname}</span>
                             </div>
                             <div className="flex items-center space-x-3 text-sm text-gray-500 mt-1">
-                              <div className="flex items-center">
-                                <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
-                                <span className="font-medium">{order.rating}</span>
-                              </div>
                               <span>•</span>
-                              <span>{order.completionRate}% hoàn thành</span>
+                              <span>ID: {order.ob_id}</span>
                               <span>•</span>
-                              <span>{order.trades} giao dịch</span>
-                              <span>•</span>
-                              <div className="flex items-center">
-                                <div
-                                  className={`w-2 h-2 rounded-full mr-1 ${order.isOnline ? "bg-green-400" : "bg-gray-400"}`}
-                                ></div>
-                                <span>{order.isOnline ? "Online" : "Offline"}</span>
-                              </div>
+                              <span>Trạng thái: {order.ob_status}</span>
                             </div>
                           </div>
                         </div>
 
                         <div className="text-right">
                           <div className="text-2xl font-bold text-gray-900 mb-1">
-                            {order.price.toLocaleString()} {selectedFiat}
+                            {order.ob_price.toLocaleString()} {order.national.nc_symbol}
                           </div>
                           <div className="text-sm text-gray-500">
                             Có sẵn:{" "}
                             <span className="font-medium">
-                              {order.available} {selectedCoin}
+                              {order.ob_amount} {order.coin.coin_symbol}
                             </span>
                           </div>
                         </div>
@@ -310,14 +338,9 @@ export default function P2PPage() {
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          {order.paymentMethods.map((method) => (
-                            <span
-                              key={method}
-                              className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full font-medium"
-                            >
-                              {method}
-                            </span>
-                          ))}
+                          <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full font-medium">
+                            {order.ob_option}
+                          </span>
                         </div>
 
                         <div className="flex items-center space-x-3">
@@ -326,6 +349,7 @@ export default function P2PPage() {
                             <span>Chat</span>
                           </button>
                           <button
+                            onClick={() => handleJoinOrder(order)}
                             className={`px-6 py-2 rounded-xl font-semibold transition-all hover:scale-105 ${
                               activeTab === "buy"
                                 ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg"
@@ -337,7 +361,8 @@ export default function P2PPage() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -532,13 +557,21 @@ export default function P2PPage() {
 
               <button
                 type="submit"
-                className={`w-full py-4 px-6 rounded-xl font-bold text-white transition-all hover:scale-105 hover:shadow-lg ${
+                disabled={createOrderMutation.isPending}
+                className={`w-full py-4 px-6 rounded-xl font-bold text-white transition-all hover:scale-105 hover:shadow-lg disabled:opacity-50 ${
                   orderType === "buy"
                     ? "bg-gradient-to-r from-green-500 to-emerald-600"
                     : "bg-gradient-to-r from-red-500 to-pink-600"
                 }`}
               >
-                Tạo lệnh {orderType === "buy" ? "mua" : "bán"}
+                {createOrderMutation.isPending ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Đang tạo...
+                  </div>
+                ) : (
+                  `Tạo lệnh ${orderType === "buy" ? "mua" : "bán"}`
+                )}
               </button>
             </form>
           </div>

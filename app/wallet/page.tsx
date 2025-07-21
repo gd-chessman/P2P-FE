@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import Link from "next/link"
 import {
   Eye,
@@ -14,99 +15,71 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react"
+import { toast } from "sonner"
 import Header from "@/components/header"
+import { 
+  getAllWallets, 
+  getTotalBalance, 
+  getTransactionHistory,
+  syncAllWallets,
+  type Wallet,
+  type Transaction 
+} from "@/services/WalletService"
 
 export default function WalletPage() {
   const [hideBalance, setHideBalance] = useState(false)
   const [selectedTab, setSelectedTab] = useState("overview")
 
-  const [wallets] = useState([
-    {
-      coin: "BTC",
-      name: "Bitcoin",
-      balance: 0.5,
-      usdValue: 21500,
-      change24h: 2.5,
-      address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
-      color: "from-orange-400 to-orange-600",
-    },
-    {
-      coin: "ETH",
-      name: "Ethereum",
-      balance: 2.3,
-      usdValue: 4600,
-      change24h: -1.2,
-      address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
-      color: "from-blue-400 to-blue-600",
-    },
-    {
-      coin: "BNB",
-      name: "Binance Coin",
-      balance: 10,
-      usdValue: 2400,
-      change24h: 3.1,
-      address: "bnb1grpf0955h0ykzq3ar5nmum7y6gdfl6lxfn46h2",
-      color: "from-yellow-400 to-yellow-600",
-    },
-    {
-      coin: "VND",
-      name: "Việt Nam Đồng",
-      balance: 50000000,
-      usdValue: 2083,
-      change24h: 0,
-      address: "Tài khoản ngân hàng",
-      color: "from-green-400 to-green-600",
-    },
-  ])
+  const queryClient = useQueryClient()
 
-  const [transactions] = useState([
-    {
-      id: 1,
-      type: "deposit",
-      coin: "BTC",
-      amount: 0.1,
-      usdValue: 4300,
-      status: "completed",
-      date: "2024-01-15 14:30",
-      txHash: "0x123...abc",
-    },
-    {
-      id: 2,
-      type: "withdraw",
-      coin: "ETH",
-      amount: 0.5,
-      usdValue: 1000,
-      status: "pending",
-      date: "2024-01-15 12:15",
-      txHash: "0x456...def",
-    },
-    {
-      id: 3,
-      type: "deposit",
-      coin: "VND",
-      amount: 10000000,
-      usdValue: 417,
-      status: "completed",
-      date: "2024-01-14 16:45",
-      txHash: "bank_transfer_001",
-    },
-    {
-      id: 4,
-      type: "withdraw",
-      coin: "BNB",
-      amount: 5,
-      usdValue: 1200,
-      status: "failed",
-      date: "2024-01-14 10:20",
-      txHash: "0x789...ghi",
-    },
-  ])
+  // Queries
+  const { data: walletsData, isLoading: walletsLoading } = useQuery({
+    queryKey: ['wallets'],
+    queryFn: getAllWallets,
+  })
 
-  const totalUSDValue = wallets.reduce((sum, wallet) => sum + wallet.usdValue, 0)
+  const { data: balanceData, isLoading: balanceLoading } = useQuery({
+    queryKey: ['wallet-balance'],
+    queryFn: getTotalBalance,
+  })
+
+  const { data: transactionsData, isLoading: transactionsLoading } = useQuery({
+    queryKey: ['wallet-transactions'],
+    queryFn: () => getTransactionHistory(),
+  })
+
+  // Mutations
+  const syncWalletsMutation = useMutation({
+    mutationFn: syncAllWallets,
+    onSuccess: () => {
+      toast.success("Đồng bộ ví thành công!")
+      queryClient.invalidateQueries({ queryKey: ['wallets'] })
+      queryClient.invalidateQueries({ queryKey: ['wallet-balance'] })
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || "Có lỗi xảy ra khi đồng bộ ví"
+      toast.error(message)
+    }
+  })
+
+  const wallets = walletsData?.data?.wallets || []
+  const transactions = transactionsData?.data?.transactions || []
+  const totalUSDValue = balanceData?.data?.totalUSD || 0
+
+  // Helper function to get wallet color
+  const getWalletColor = (symbol: string) => {
+    switch (symbol) {
+      case 'BTC': return 'from-orange-400 to-orange-600'
+      case 'ETH': return 'from-blue-400 to-blue-600'
+      case 'BNB': return 'from-yellow-400 to-yellow-600'
+      case 'VND': return 'from-green-400 to-green-600'
+      default: return 'from-gray-400 to-gray-600'
+    }
+  }
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-    alert("Đã sao chép!")
+    toast.success("Đã sao chép!")
   }
 
   return (
@@ -121,9 +94,13 @@ export default function WalletPage() {
             <p className="text-gray-600 text-lg">Quản lý tài sản tiền điện tử của bạn</p>
           </div>
           <div className="flex items-center space-x-4 mt-4 lg:mt-0">
-            <button className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white transition-colors">
-              <RefreshCw className="h-4 w-4" />
-              <span>Làm mới</span>
+            <button 
+              onClick={() => syncWalletsMutation.mutate()}
+              disabled={syncWalletsMutation.isPending}
+              className="flex items-center space-x-2 px-4 py-2 bg-white/80 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${syncWalletsMutation.isPending ? 'animate-spin' : ''}`} />
+              <span>{syncWalletsMutation.isPending ? 'Đang đồng bộ...' : 'Làm mới'}</span>
             </button>
             <button className="flex items-center space-x-2 px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all">
               <Plus className="h-4 w-4" />
@@ -195,80 +172,85 @@ export default function WalletPage() {
         {/* Overview Tab */}
         {selectedTab === "overview" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {wallets.map((wallet) => (
-              <div key={wallet.coin} className="group hover:scale-105 transition-all duration-300">
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-shadow">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className={`w-14 h-14 bg-gradient-to-r ${wallet.color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}
+            {walletsLoading ? (
+              <div className="col-span-2 text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Đang tải thông tin ví...</p>
+              </div>
+            ) : wallets.length === 0 ? (
+              <div className="col-span-2 text-center py-12">
+                <p className="text-gray-600">Chưa có ví nào</p>
+              </div>
+            ) : (
+                            wallets.map((wallet: Wallet) => (
+                <div key={wallet.wallet_id} className="group hover:scale-105 transition-all duration-300">
+                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 hover:shadow-xl transition-shadow">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center space-x-4">
+                        <div
+                          className={`w-14 h-14 bg-gradient-to-r ${getWalletColor(wallet.network.network_symbol)} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}
+                        >
+                          <span className="font-bold text-white text-lg">{wallet.network.network_symbol}</span>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">{wallet.network.network_name}</h3>
+                          <p className="text-gray-500">{wallet.network.network_symbol}</p>
+                        </div>
+                      </div>
+                      <div className="text-right text-gray-600">
+                        <div className="flex items-center space-x-1">
+                          <span className="font-semibold">
+                            {wallet.wallet_status}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mb-6">
+                      <div className="text-3xl font-bold text-gray-900 mb-1">
+                        {hideBalance ? "****" : wallet.wallet_balance.toLocaleString()} {wallet.network.network_symbol}
+                      </div>
+                      <div className="text-gray-500 text-lg">
+                        {hideBalance ? "****" : `≈ $${(wallet.wallet_balance * 43000).toLocaleString()}`}
+                      </div>
+                    </div>
+
+                    <div className="mb-6">
+                      <div className="text-sm font-semibold text-gray-700 mb-2">Địa chỉ ví</div>
+                      <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-xl border">
+                        <span className="text-sm font-mono text-gray-700 flex-1 truncate">{wallet.wallet_address}</span>
+                        <button
+                          onClick={() => copyToClipboard(wallet.wallet_address)}
+                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                        <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                          <QrCode className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-3">
+                      <Link
+                        href={`/deposit?coin=${wallet.network.network_symbol}`}
+                        className="flex-1 flex items-center justify-center px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all font-semibold"
                       >
-                        <span className="font-bold text-white text-lg">{wallet.coin}</span>
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900">{wallet.name}</h3>
-                        <p className="text-gray-500">{wallet.coin}</p>
-                      </div>
-                    </div>
-                    <div className={`text-right ${wallet.change24h >= 0 ? "text-green-600" : "text-red-600"}`}>
-                      <div className="flex items-center space-x-1">
-                        {wallet.change24h >= 0 ? (
-                          <TrendingUp className="h-4 w-4" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4" />
-                        )}
-                        <span className="font-semibold">
-                          {wallet.change24h >= 0 ? "+" : ""}
-                          {wallet.change24h}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mb-6">
-                    <div className="text-3xl font-bold text-gray-900 mb-1">
-                      {hideBalance ? "****" : wallet.balance.toLocaleString()} {wallet.coin}
-                    </div>
-                    <div className="text-gray-500 text-lg">
-                      {hideBalance ? "****" : `≈ $${wallet.usdValue.toLocaleString()}`}
-                    </div>
-                  </div>
-
-                  <div className="mb-6">
-                    <div className="text-sm font-semibold text-gray-700 mb-2">Địa chỉ ví</div>
-                    <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-xl border">
-                      <span className="text-sm font-mono text-gray-700 flex-1 truncate">{wallet.address}</span>
-                      <button
-                        onClick={() => copyToClipboard(wallet.address)}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        <ArrowDownLeft className="h-4 w-4 mr-2" />
+                        Nạp
+                      </Link>
+                      <Link
+                        href={`/withdraw?coin=${wallet.network.network_symbol}`}
+                        className="flex-1 flex items-center justify-center px-4 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all font-semibold"
                       >
-                        <Copy className="h-4 w-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                        <QrCode className="h-4 w-4" />
-                      </button>
+                        <ArrowUpRight className="h-4 w-4 mr-2" />
+                        Rút
+                      </Link>
                     </div>
-                  </div>
-
-                  <div className="flex space-x-3">
-                    <Link
-                      href={`/deposit?coin=${wallet.coin}`}
-                      className="flex-1 flex items-center justify-center px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all font-semibold"
-                    >
-                      <ArrowDownLeft className="h-4 w-4 mr-2" />
-                      Nạp
-                    </Link>
-                    <Link
-                      href={`/withdraw?coin=${wallet.coin}`}
-                      className="flex-1 flex items-center justify-center px-4 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all font-semibold"
-                    >
-                      <ArrowUpRight className="h-4 w-4 mr-2" />
-                      Rút
-                    </Link>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         )}
 
@@ -303,68 +285,87 @@ export default function WalletPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {transactions.map((tx) => (
-                    <tr key={tx.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center mr-3 ${
-                              tx.type === "deposit" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-                            }`}
-                          >
-                            {tx.type === "deposit" ? (
-                              <ArrowDownLeft className="h-4 w-4" />
-                            ) : (
-                              <ArrowUpRight className="h-4 w-4" />
-                            )}
-                          </div>
-                          <span className="font-medium">{tx.type === "deposit" ? "Nạp" : "Rút"}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center mr-3">
-                            <span className="text-xs font-bold text-gray-600">{tx.coin}</span>
-                          </div>
-                          <span className="font-medium">{tx.coin}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="font-semibold text-gray-900">
-                            {tx.amount.toLocaleString()} {tx.coin}
-                          </div>
-                          <div className="text-sm text-gray-500">≈ ${tx.usdValue.toLocaleString()}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                            tx.status === "completed"
-                              ? "bg-green-100 text-green-800"
-                              : tx.status === "pending"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {tx.status === "completed"
-                            ? "Hoàn thành"
-                            : tx.status === "pending"
-                              ? "Đang xử lý"
-                              : "Thất bại"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{tx.date}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => copyToClipboard(tx.txHash)}
-                          className="text-blue-600 hover:text-blue-900 transition-colors"
-                        >
-                          Sao chép hash
-                        </button>
+                  {transactionsLoading ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-4 text-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                        <p className="text-gray-600">Đang tải lịch sử giao dịch...</p>
                       </td>
                     </tr>
-                  ))}
+                  ) : transactions.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-4 text-center text-gray-600">
+                        Chưa có giao dịch nào
+                      </td>
+                    </tr>
+                  ) : (
+                                        transactions.map((tx: Transaction) => (
+                      <tr key={tx.wh_id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div
+                              className={`w-8 h-8 rounded-xl flex items-center justify-center mr-3 ${
+                                tx.wh_type === "DEPOSIT" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                              }`}
+                            >
+                              {tx.wh_type === "DEPOSIT" ? (
+                                <ArrowDownLeft className="h-4 w-4" />
+                              ) : (
+                                <ArrowUpRight className="h-4 w-4" />
+                              )}
+                            </div>
+                            <span className="font-medium">{tx.wh_type === "DEPOSIT" ? "Nạp" : "Rút"}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-gray-100 rounded-xl flex items-center justify-center mr-3">
+                              <span className="text-xs font-bold text-gray-600">{tx.network.network_symbol}</span>
+                            </div>
+                            <span className="font-medium">{tx.network.network_symbol}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="font-semibold text-gray-900">
+                              {tx.wh_amount.toLocaleString()} {tx.network.network_symbol}
+                            </div>
+                            <div className="text-sm text-gray-500">≈ ${(tx.wh_amount * 43000).toLocaleString()}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
+                              tx.wh_status === "COMPLETED"
+                                ? "bg-green-100 text-green-800"
+                                : tx.wh_status === "PENDING" || tx.wh_status === "PROCESSING"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {tx.wh_status === "COMPLETED"
+                              ? "Hoàn thành"
+                              : tx.wh_status === "PENDING" || tx.wh_status === "PROCESSING"
+                                ? "Đang xử lý"
+                                : "Thất bại"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(tx.wh_created_at).toLocaleString("vi-VN")}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          {tx.wh_tx_hash && (
+                            <button
+                              onClick={() => copyToClipboard(tx.wh_tx_hash!)}
+                              className="text-blue-600 hover:text-blue-900 transition-colors"
+                            >
+                              Sao chép hash
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                                         ))
+                   )}
                 </tbody>
               </table>
             </div>
